@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 # Exit inmediately if a command fails
 set -e
@@ -13,7 +13,7 @@ BIONIC_UPDATES_REPO="deb http://archive.ubuntu.com/ubuntu/ bionic-updates main u
 BIONIC_SECURITY_REPO="deb http://archive.ubuntu.com/ubuntu/ bionic-security main universe multiverse"
 PSQL_UPSTREAM_REPO="deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main"
 PSQL_UPSTREAM_KEY="https://www.postgresql.org/media/keys/ACCC4CF8.asc"
-DPKG_PRE_DEPENDS="gnupg wget ca-certificates"
+DPKG_PRE_DEPENDS="gnupg wget ca-certificates curl"
 DPKG_DEPENDS="bzr \
               git \
               mercurial \
@@ -68,7 +68,8 @@ DPKG_DEPENDS="bzr \
               postgresql-contrib-${PSQL_VERSION} \
               postgresql-server-dev-${PSQL_VERSION} \
               pgbadger \
-              python-cups"
+              python-cups \
+              wkhtmltopdf"
 
 PIP_OPTS="--upgrade \
           --no-cache-dir -r"
@@ -102,45 +103,39 @@ NPM_DEPENDS="less \
 # Configure apt sources so we can use multiverse section from repo
 conf_aptsources "${BIONIC_REPO}" "${BIONIC_UPDATES_REPO}" "${BIONIC_SECURITY_REPO}"
 
-# This will setup our default locale.
-# Setting these three variables will ensure we have a proper locale environment
-#update-locale LANG=${LANG} LANGUAGE=${LANG} LC_ALL=${LANG} LC_COLLATE=${LC_COLLATE}
-
-
 # Upgrade system and install some pre-dependencies
 apt-get update
 apt-get upgrade
 apt-get install ${DPKG_PRE_DEPENDS}
 
+curl -sL https://deb.nodesource.com/setup_8.x | bash -
+
 # This will put postgres's upstream repo for us to install a newer
 # postgres because our image is so old
 add_custom_aptsource "${PSQL_UPSTREAM_REPO}" "${PSQL_UPSTREAM_KEY}"
-
 
 # Release the apt monster!
 apt-get update
 apt-get upgrade
 apt-get install ${DPKG_DEPENDS} ${PIP_DPKG_BUILD_DEPENDS}
 
+# Install node dependencies
+npm install ${NPM_OPTS} ${NPM_DEPENDS}
+
 # Get pip from upstream because is lighter
 py_download_execute https://bootstrap.pypa.io/get-pip.py
 
+
 # Let's keep this version ultil the bugs get fixed
 pip install --upgrade pip
+
 # Install python dependencies
 pip install ${PIP_OPTS} /usr/share/docker-internal/odoo_base_requirements.txt
 pip install ${PIP_OPTS} /usr/share/docker-internal/test_requirements.txt
 
-# Install qt patched version of wkhtmltopdf because of maintainer nonsense
-wkhtmltox_install "${WKHTMLTOX_URL}"
-
-# Final cleaning
-find /tmp -type f -print0 | xargs -0r rm -rf
-find /var/tmp -type f -print0 | xargs -0r rm -rf
-find /var/log -type f -print0 | xargs -0r rm -rf
-find /var/lib/apt/lists -type f -print0 | xargs -0r rm -rf
 
 # Configure the path for the postgres logs
+echo "Configure the path for the postgres logs"
 mkdir -p /var/log/pg_log
 chmod 0757 /var/log/pg_log/
 echo -e "export PG_LOG_PATH=/var/log/pg_log/postgresql.log\n" | tee -a /etc/bash.bashrc
@@ -167,3 +162,15 @@ log_checkpoints=on
 log_hostname=on
 log_line_prefix='%t [%p]: [%l-1] db=%d,user=%u'
 EOF
+
+# Final cleaning
+find /tmp -type f -print0 | xargs -0r rm -rf
+find /var/tmp -type f -print0 | xargs -0r rm -rf
+find /var/log -type f -print0 | xargs -0r rm -rf
+find /var/lib/apt/lists -type f -print0 | xargs -0r rm -rf
+
+/etc/init.d/postgresql stop
+echo "include = '/etc/postgresql-common/common-agenterp.conf'" >> /etc/postgresql/${PSQL_VERSION}/main/postgresql.conf
+echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/$PSQL_VERSION/main/pg_hba.con
+/etc/init.d/postgresql start
+psql_create_role "odoo" "12wqeads34wrefsdv"

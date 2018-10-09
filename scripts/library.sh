@@ -22,10 +22,7 @@ function py_download_execute(){
     wget -qO- "${URL}" | python
 }
 
-function wkhtmltox_install(){
-    URL="${1}"
-    DIR="$( mktemp -d )"
-    wget -q "${URL}" -O wkhtmltox.deb
-    dpkg -i wkhtmltox.deb
-    rm wkhtmltox.deb
+
+psql_create_role(){
+    su - postgres -c "psql -c  \"CREATE ROLE ${1} LOGIN PASSWORD '${2}' SUPERUSER INHERIT CREATEDB CREATEROLE;\""
 }
