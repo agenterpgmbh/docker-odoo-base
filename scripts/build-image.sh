@@ -137,6 +137,7 @@ pip install --upgrade pip
 # Install python dependencies
 pip install ${PIP_OPTS} /usr/share/docker-internal/odoo_base_requirements.txt
 pip install ${PIP_OPTS} /usr/share/docker-internal/test_requirements.txt
+pip install yamllint
 
 
 # Configure the path for the postgres logs
