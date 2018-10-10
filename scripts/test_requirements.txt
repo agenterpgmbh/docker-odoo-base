@@ -1,2 +1,6 @@
-flake8
+git-lint
 pylint-odoo
+pycodestyle
+yamllint
+html-linter
+cpplint

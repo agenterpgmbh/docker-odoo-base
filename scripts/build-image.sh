@@ -69,7 +69,10 @@ DPKG_DEPENDS="bzr \
               postgresql-server-dev-${PSQL_VERSION} \
               pgbadger \
               python-cups \
-              wkhtmltopdf"
+              wkhtmltopdf \
+              pngcrush \
+              optipng \
+              libjpeg-progs"
 
 PIP_OPTS="--upgrade \
           --no-cache-dir -r"
@@ -77,7 +80,9 @@ PIP_OPTS="--upgrade \
 NPM_OPTS="-g"
 NPM_DEPENDS="less \
              less-plugin-clean-css \
-             jshint"
+             jshint \
+             csslint \
+             sass-lint"
 
 
 # Dpkg, please always install configurations from upstream, be fast
