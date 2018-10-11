@@ -3,7 +3,7 @@
 # Exit inmediately if a command fails
 set -e
 
-. /usr/share/docker-internal/library.sh
+. library.sh
 . /etc/lsb-release
 
 # Let's set some defaults here
