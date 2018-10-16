@@ -47,8 +47,9 @@ while [ "$1" != "" ]; do
 done
 
 if [ "$file" == "1" ]; then
-    for gitfile in $(git diff --name-only HEAD HEAD~2); do
-        if [ "$gitfile" == "*.py" ]; then
+    for gitfile in $(git diff --name-only HEAD HEAD~1); do
+        if [[ $gitfile =~ \.py$ ]] || [[ $gitfile =~ \.xml$ ]]; then
+            echo $gitfile
             pylint --load-plugins=pylint_odoo -d all -e odoolint --output-format=text --msg-template='{path} {msg_id}:{line:3d},{column}: {obj}: {msg}' --reports=n ${gitfile}
             exitcode=$(($exitcode + $?))
         fi
@@ -56,7 +57,7 @@ if [ "$file" == "1" ]; then
 fi
 
 if [ "$module" == "1" ]; then
-    for gitfile in $(git diff --name-only HEAD HEAD~2); do
+    for gitfile in $(git diff --name-only HEAD HEAD~1); do
         directory=$(dirname ${gitfile})
         if [ "$directory" != "." ]; then
             found=0
