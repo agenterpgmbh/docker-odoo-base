@@ -50,7 +50,7 @@ if [ "$file" == "1" ]; then
     for gitfile in $(git diff --name-only HEAD HEAD~1); do
         if [[ $gitfile =~ \.py$ ]] || [[ $gitfile =~ \.xml$ ]]; then
             echo $gitfile
-            pylint --load-plugins=pylint_odoo -d all -e odoolint --output-format=text --msg-template='{path} {msg_id}:{line:3d},{column}: {obj}: {msg}' --reports=n ${gitfile}
+            pylint --load-plugins=pylint_odoo --disable=all --enable=odoolint --disable=C8101,C8105,C8202 --output-format=text --msg-template='{path} {msg_id}:{line:3d},{column}: {obj}: {msg}' --reports=n ${gitfile}
             exitcode=$(($exitcode + $?))
         fi
     done
@@ -64,7 +64,7 @@ if [ "$module" == "1" ]; then
             while [ "$found" != "1" ] && [ "$directory" != "." ]; do
                 found=$(find_module ${directory})
                 if [ "$found" == "1" ]; then
-                   pylint --load-plugins=pylint_odoo -d all -e odoolint --output-format=text --msg-template='{path} {msg_id}:{line:3d},{column}: {obj}: {msg}' --reports=n ${directory}
+                   pylint --load-plugins=pylint_odoo --disable=all --enable=odoolint --disable=C8101,C8105,C8202 --output-format=text --msg-template='{path} {msg_id}:{line:3d},{column}: {obj}: {msg}' --reports=n ${directory}
                    exitcode=$(($exitcode + $?))
                    break
                 else
@@ -77,10 +77,10 @@ fi
 
 if [ "$project" == "1" ]; then
     if [ -d "modules" ]; then
-        pylint --load-plugins=pylint_odoo -d all -e odoolint --output-format=text --msg-template='{path} {msg_id}:{line:3d},{column}: {obj}: {msg}' --reports=n modules/
+        pylint --load-plugins=pylint_odoo --disable=all --enable=odoolint --disable=C8101,C8105,C8202 --output-format=text --msg-template='{path} {msg_id}:{line:3d},{column}: {obj}: {msg}' --reports=n modules/
         exitcode=$(($exitcode + $?))
     else
-        pylint --load-plugins=pylint_odoo -d all -e odoolint --output-format=text --msg-template='{path} {msg_id}:{line:3d},{column}: {obj}: {msg}' --reports=n .
+        pylint --load-plugins=pylint_odoo --disable=all --enable=odoolint --disable=C8101,C8105,C8202 --output-format=text --msg-template='{path} {msg_id}:{line:3d},{column}: {obj}: {msg}' --reports=n .
         exitcode=$(($exitcode + $?))
     fi
 fi
